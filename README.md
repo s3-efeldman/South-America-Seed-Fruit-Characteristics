@@ -6,11 +6,11 @@ The South American Seed/Fruit Characteristics Dataset contains information on se
 This data was compiled for forthcoming publication. However, we have already begun to expand the dataset beyond the scope of this publication. It is important for us to make this data publicly available because of the current limited resources providing well reported data for a significant number of plant species characteristics. Details such as uncertainty and sample size are often left out of databases, but are important for understanding the credibility of reported values and variation within and among species. By giving the public access to our database, we hope to encourage better reporting on botanical data and act as a foundational point for others looking to explore this field.
 
 # Traits Included
-Wild/not wild: Wild plants are those that are native to South America. Not wild plants are those that are introduced, invasive, or cultivated in South America.
-Fruit type: Fleshy/dry and dehiscent/indehiscent
-Color: Color of the outside of the fruit
-Number of seeds/fruit
-Seed length, width, and mass
+Wild/not wild: Wild plants are those that are native to South America. Not wild plants are those that are introduced, invasive, or cultivated in South America.  
+Fruit type: Fleshy/dry and dehiscent/indehiscent  
+Color: Color of the outside of the fruit  
+Number of seeds/fruit  
+Seed length, width, and mass  
 Fruit length, width, and mass
 
 For more information on included traits, please refer to our metadata.
