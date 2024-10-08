@@ -16,9 +16,9 @@ Fruit length, width, and mass
 For more information on included traits, please refer to our metadata.
 
 # Contribute to the Database
-If you have data to contribute to the database or have a revision to make to the information it contains, you may submit these via one of the following Google forms:
-English: [https://shorturl.at/oVbT1](https://shorturl.at/oVbT1)
-Spanish: 
+If you have data to contribute to the database or have a revision to make to the information it contains, you may submit these via one of the following Google forms:  
+English: [https://tinyurl.com/2s3en8pb](https://tinyurl.com/2s3en8pb)  
+Spanish: [https://tinyurl.com/5985a458](https://tinyurl.com/5985a458)  
 Portuguese: Forthcoming
 
 # Methods
