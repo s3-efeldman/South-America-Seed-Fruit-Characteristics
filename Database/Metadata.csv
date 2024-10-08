@@ -1,0 +1,27 @@
+﻿Column,Contents,Definitions
+Plant_Species,,The plant species.
+Synonyms,,Species listed as homotypic and heterotypic synonyms according to Kew Royal Botanical Garden.
+Family,,The family of the species.
+Wild_Not_Wild,W,The species is native to South America.
+,NW,"The species is introduced, cultivated, or invasive in South America."
+Color,,"Color of fruit in its ripe/mature state. Fruits may have multiple colors if the color varies, if multiple colors are present on a single fruit, if a fruit is dehiscent and the outer shell and the flesh differ in color (e.g., Iryanthera sp.), or if there is an accessory fruit (e.g., Anacardium sp.)."
+Fleshy_Dry,F,Fleshy fruit.
+,D,Dry fruit.
+Dehiscent_Indehiscent,D,Dehiscent fruit.
+,I,Indehiscent fruit.
+Number_S_per_F,,Average number of seeds per fruit. 
+Length,,Average length of longest axis of seed (S) or fruit (F) in millimeters.
+Width,,Average length of second longest axis of seed (S) or fruit (F) in millimeters.
+Mass,,Average mass in grams of one seed (S) or fruit (F).
+Dry_Wet,D,"Dry mass taken, meaning that sample was dried prior to measurement."
+,W,"Wet mass taken, meaning that sample was weighed without drying."
+Uncertainty,None Specified,The uncertainty about the measure of the plant trait was not reported.
+,Range,The uncertainty about the measure of the plant trait was reported as a range.
+,SD,The uncertainty about the measure of the plant trait was reported as standard deviation.
+,SE,The uncertainty about the measure of the plant trait was reported as standard error.
+,Unknown +/-,"The uncertainty about the measure of the plant trait was reported as standard deviation or standard error, but the source does not specify which."
+,Confidence Interval,The uncertainty about the measure of the plant trait was reported as a 95th percent confidence interval.
+Lower_Bound,,The lower bound of a range or confidence interval.
+Upper_Bound,,The upper bound of a range or confidence interval.
+SD_SE,,"The standard deviation, standard error, or unknown +/-."
+Sample_Size,,"The number of fruits or seeds measured. If 0, the sample size was not reported."
