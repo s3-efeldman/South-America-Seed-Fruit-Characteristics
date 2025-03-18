@@ -2,8 +2,8 @@
 Plant_Species,,The plant species.
 Synonyms,,Species listed as homotypic and heterotypic synonyms according to Kew Royal Botanical Garden.
 Family,,The family of the species.
-Wild_Not_Wild,W,The species is native to South America.
-,NW,"The species is introduced, cultivated, or invasive in South America."
+Native_Introduced,N,The species is native to South America.
+,I,The species is introduced to South America.
 Color,,"Color of fruit in its ripe/mature state. Fruits may have multiple colors if the color varies, if multiple colors are present on a single fruit, if a fruit is dehiscent and the outer shell and the flesh differ in color (e.g., Iryanthera sp.), or if there is an accessory fruit (e.g., Anacardium sp.)."
 Fleshy_Dry,F,Fleshy fruit.
 ,D,Dry fruit.
