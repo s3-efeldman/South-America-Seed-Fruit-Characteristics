@@ -1,7 +1,7 @@
 # South-America-Seed-Fruit-Characteristics
 <img width="759" alt="Screenshot 2024-10-04 at 1 53 27 PM" src="https://github.com/user-attachments/assets/539b46ce-ea19-49d1-837b-daec7b87ca51">
 
-The South American Seed/Fruit Characteristics Dataset contains information on seed and fruit traits for 675 mammal-dispersed plant species from 96 families found in South America. 
+The South American Seed/Fruit Characteristics Dataset contains information on seed and fruit traits for 659 mammal-dispersed plant species from 96 families found in South America. 
 
 This data was compiled for forthcoming publication. However, we have already begun to expand the dataset beyond the scope of this publication. It is important for us to make this data publicly available because of the current limited resources providing well reported data for a significant number of plant species characteristics. Details such as uncertainty and sample size are often left out of databases, but are important for understanding the credibility of reported values and variation within and among species. By giving the public access to our database, we hope to encourage better reporting on botanical data and act as a foundational point for others looking to explore this field.
 
