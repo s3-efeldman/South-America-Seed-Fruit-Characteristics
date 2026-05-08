@@ -1,0 +1,30 @@
+﻿Column,Contents,Definitions
+plant_species,,The plant species.
+in_publication,1,Plant species that are being used in the publication analysis.
+,0,Plant species that aren't being used in the publication analysis.
+synonyms,,Species listed as homotypic and heterotypic synonyms according to Kew Royal Botanical Garden.
+family,,The family of the species.
+native_introduced,N,The species is native to South America.
+,I,The species is introduced to South America.
+color,,"Color of fruit in its ripe/mature state. Fruits may have multiple colors if the color varies, if multiple colors are present on a single fruit, if a fruit is dehiscent and the outer shell and the flesh differ in color (e.g., Iryanthera sp.), or if there is an accessory fruit (e.g., Anacardium sp.)."
+fleshy_dry,F,Fleshy fruit.
+,D,Dry fruit.
+dehiscent_indehiscent,D,Dehiscent fruit.
+,I,Indehiscent fruit.
+number_s_per_f,,Average number of seeds per fruit. 
+length,,Average length of longest axis of seed (s) or fruit (s) in millimeters.
+width,,Average length of second longest axis of seed (s) or fruit (s) in millimeters.
+mass,,Average mass in grams of one seed (s) or fruit (f).
+dry_wet,D,"Dry mass taken, meaning that sample was dried prior to measurement."
+,W,"Wet mass taken, meaning that sample was weighed without drying."
+uncertainty,None Specified,The uncertainty about the measure of the plant trait was not reported.
+,Range,The uncertainty about the measure of the plant trait was reported as a range.
+,SD,The uncertainty about the measure of the plant trait was reported as standard deviation.
+,SE,The uncertainty about the measure of the plant trait was reported as standard error.
+,Unknown +/-,"The uncertainty about the measure of the plant trait was reported as standard deviation or standard error, but the source does not specify which."
+,Confidence Interval,The uncertainty about the measure of the plant trait was reported as a 95th percent confidence interval.
+lower_bound,,The lower bound of a range or confidence interval.
+upper_bound,,The upper bound of a range or confidence interval.
+sd_se,,"The standard deviation, standard error, or unknown +/-."
+sample_size,,"The number of fruits or seeds measured. If 0, the sample size was not reported."
+citations,,Sources of information for that plant species.
