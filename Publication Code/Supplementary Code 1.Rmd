@@ -1,0 +1,377 @@
+---
+title: "Supplementary Code1"
+output:
+  word_document: default
+  html_document: default
+date: "2026-04-22"
+---
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(MASS)
+library(purrr)
+library(rlang)
+```
+
+```{r}
+##Load data set (the mammals categorized, the plants they disperse, and the plant traits)
+#This has one row per plant species per study
+systematic_review_analysis_discrete <- read.csv("systematic_review_analysis_discrete.csv") 
+
+#This has one row per plant species
+systematic_review_analysis_continuous <- read.csv("systematic_review_analysis_continuous.csv") #
+
+
+##Load lists of trait values for each plant species
+all_native_introduced <- read.csv("all_native_introduced.csv")
+all_dehiscent_indehiscent <- read.csv("all_dehiscent_indehiscent.csv")
+all_fleshy_dry <- read.csv("all_fleshy_dry.csv")
+all_num_seeds <- read.csv("numberOfSeedsMethod2.csv")
+all_s_width <- read.csv("seedWidthMethod2.csv")
+all_f_width <- read.csv("fruitWidthMethod2.csv")
+```
+
+Permutation test for discrete traits (native/introduced, dehiscent/indehiscent, fleshy/dry)
+
+```{r}
+##Exclude species for which we only found one study
+network_discrete <- systematic_review_analysis_discrete %>%
+  filter(!mammal %in% c("Lontra longicaudis", "Procyon cancrivorus", "Saimiri sciureus"))
+```
+
+```{r}
+##Function for sub-sampling studies, so that there are two studies per mammal species.
+subsampled_studies <- function(df){
+  
+  #Choose studies
+  sampled_studies <- df %>%
+    distinct(mammal, citation_number) %>%
+    group_by(mammal) %>%
+    summarize(citation_number = list(if(n() > 2) sample(unique(citation_number), 2) else citation_number), .groups = "drop") %>%
+    unnest(citation_number)
+  
+  #Return df with chosen studies
+  df %>% inner_join(sampled_studies, by = c("mammal", "citation_number"))
+}
+```
+
+```{r}
+##Function for permutation test
+#Set up vectors for storing results
+test_stats_1 <- numeric(1000)
+test_stats_2 <- numeric(1000)
+permutation_discrete <- function(df, plant_trait,plant_df,trait_value_1,trait_value_2,mammal_trait,mammal_stable){
+  
+  
+  
+  ###Calculate test statistic (difference with and without declining mammals) of original data:
+  ##Calculate proportional change for trait value 1
+  #Keep only the rows with plants with trait value 1 
+  filter_detail_1 <- df %>% filter({{plant_trait}} == trait_value_1) 
+  
+  #Calculate the number of mammal-plant links with trait value 1
+  with_declining_1 <- nrow(filter_detail_1) 
+  
+  #Keep only the rows with non-threatened or small-bodied mammals
+  decline_filter_1 <- filter_detail_1 %>% filter({{mammal_trait}} == mammal_stable) 
+  
+  #Count the number of rows with non-threatened or small-bodied mammals interacting with plants with trait value 1
+  without_declining_1 <- nrow(decline_filter_1) 
+  true_test_stat_1 <- abs((with_declining_1 - without_declining_1))
+
+  
+  ##Calculate test statistic for trait value 2
+  filter_detail_2 <- df %>% filter({{plant_trait}} == trait_value_2) 
+  with_declining_2 <- nrow(filter_detail_2) 
+  decline_filter_2 <- filter_detail_2 %>% filter({{mammal_trait}} == mammal_stable)
+  without_declining_2 <- nrow(decline_filter_2) 
+  true_test_stat_2 <- abs((with_declining_2 - without_declining_2))
+  
+  
+  
+  ###Create a df with all the possible links between mammals and plants on which we have data for a given plant trait to randomly sample from in the permutation test
+  #Remove all plant species for which we don't have a measurement
+  systematic_review_clean <- filter(df,!is.na({{plant_trait}})) 
+  
+  #Find the number of mammals in the df for that plant trait
+  mammals_unique <- length(unique(systematic_review_clean$mammal)) 
+  
+  #Only keep the plant species from this sub-sample of studies
+  plant_df_cleaned <- filter(plant_df, plant_species %in% df$plant_species) 
+  
+  #Create a df where all of the plants are repeated for each mammal species 
+  plants_duplicate <- cbind(plant_df_cleaned,rep(row.names(plant_df_cleaned),each = mammals_unique)) 
+  
+  #Separate the columns containing the mammal, threatened status, and body size
+  mammals <- systematic_review_clean[,c(1:3)] 
+  
+  #Remove duplicate rows so there is only one row per mammal species
+  mammals <- distinct(mammals) 
+  
+  #Create a df where all the mammals are repeated for each plant species
+  mammals_duplicate <- cbind(mammals,rep(row.names(mammals),each=length(plant_df_cleaned$plant_species))) 
+  
+  #Put the df in alphabetical order
+  mammals_duplicate <- arrange(mammals_duplicate,mammal) 
+  
+  #Combine mammal and plant lists into one df with all possible interactions between mammals and plants
+  all <- cbind(mammals_duplicate,plants_duplicate) 
+  
+  
+  ##Sample from the df of all possibilities the number of links each mammal has in the network. Repeat this for each permutation.
+  #Count the number of links per mammal species in the original sub-sampled data
+  link_counts <- group_by(systematic_review_clean,mammal) %>% summarize(count = n())
+  
+  #Turn link_counts into a list
+  mammal_links <- with(link_counts,split(count,factor(mammal,levels=unique(mammal)))) 
+  
+  
+  
+  ###Run a permutation test for each of the 1,000 sub-sampled data sets
+  #Create an empty vector to store the test statistics for the 1,000 permuted data sets
+  permutation_test_statistics <- numeric(1000) 
+
+  #Permute a given sub-sampled data set 1000 times
+  for (i in 1:1000) {
+    
+    #Split df with all possibilities up by mammal species
+    mammal_groups <- split(all, all$mammal) 
+  
+    #For each mammal, remove links until the number of links is the same as in the original sub-sampled data
+    for (mammal in names(mammal_groups)) {
+      
+      #Number of links in the original sub-sampled data
+      links_current <- mammal_links[[mammal]] 
+    
+      #Randomly sample indices until reach the number in the original sub-sampled data for that mammal
+      if (nrow(mammal_groups[[mammal]]) > links_current) {
+        sample_mammal <- sample(nrow(mammal_groups[[mammal]]), links_current) 
+        mammal_groups[[mammal]] <- mammal_groups[[mammal]][sample_mammal, ]
+      }
+    }
+  
+    
+  
+    ###Calculate the test statistic for each permuted dataset.
+    #Combine outputs for each mammal maintaining set order in df
+    final_permutation <- do.call(rbind, mammal_groups) 
+
+    
+    ##Calculate the test statistic for trait value 1
+    #Keep only the rows with plants with trait value 1 
+    filter_detail_1 <- final_permutation %>% filter({{plant_trait}} == trait_value_1) 
+  
+    #Calculate the number of mammal-plant links with trait value 1
+    with_declining_1 <- nrow(filter_detail_1) 
+  
+    #Keep only the rows with non-threatened or small-bodied mammals
+    decline_filter_1 <- filter_detail_1 %>% filter({{mammal_trait}} == mammal_stable) 
+  
+    #Count the number of rows with non-threatened or small-bodied mammals interacting with plants with trait value 1
+    without_declining_1 <- nrow(decline_filter_1) 
+    test_stat_1 <- abs((with_declining_1 - without_declining_1))
+
+  
+    ##Calculate proportional change for trait value 2
+    filter_detail_2 <- final_permutation %>% filter({{plant_trait}} == trait_value_2) 
+    with_declining_2 <- nrow(filter_detail_2) 
+    decline_filter_2 <- filter_detail_2 %>% filter({{mammal_trait}} == mammal_stable)
+    without_declining_2 <- nrow(decline_filter_2) 
+    test_stat_2 <- abs((with_declining_2 - without_declining_2))
+  
+  
+    ##Store test statistics in permutation_test_statistics vector
+    test_stats_1[i] <- test_stat_1
+    test_stats_2[i] <- test_stat_2
+  }
+  return(list(
+    true_test_stat_1 = true_test_stat_1, 
+    true_test_stat_2 = true_test_stat_2,
+    test_stats_1 = test_stats_1,
+    test_stats_2 = test_stats_2
+  ))
+}
+```
+
+Example of application of these functions to testing the impact of threatened mammals on the dispersal of native vs. introduced plants.
+
+```{r}
+#Save results
+results_N_I <- vector("list", 1000)
+
+#Generate the 1000 sub-sampled data sets on which to do the permutation test
+for(i in 1:1000){
+  set.seed(i + 100)
+  
+  #Sub-sample two studies from each mammal
+  subsampled_df <- subsampled_studies(systematic_review_analysis_discrete)
+  
+  #Run the permutation test
+  permutation_results <- permutation_discrete(
+    df = subsampled_df,
+    plant_trait = native_introduced,
+    plant_df = all_native_introduced,
+    trait_value_1 = "N",
+    trait_value_2 = "I",
+    mammal_trait = threatened_status,
+    mammal_stable = "NT"
+  )
+  
+  #Store all results
+  results_N_I[[i]] <- tibble(
+    iteration = i,
+    true_test_stat_1 = permutation_results$true_test_stat_1,
+    true_test_stat_2 = permutation_results$true_test_stat_2,
+    test_stats_1 = list(permutation_results$test_stats_1),
+    test_stats_2 = list(permutation_results$test_stats_2)
+  )
+}
+```
+
+```{r}
+#Go from tibble format to having vectors of values
+native_threatened_all <- bind_rows(results_N_I)
+true_test_stat_N <- native_threatened_all %>% pull(true_test_stat_1)
+test_stats_N <- native_threatened_all %>% pull(test_stats_1)
+true_test_stat_I <- native_threatened_all %>% pull(true_test_stat_2)
+test_stats_I <- native_threatened_all %>% pull(test_stats_2) 
+```
+
+```{r}
+##Calculate the mean and CI of the test statistic 
+#For native plants
+mean_test_stat_N <- mean(true_test_stat_N)
+CI_test_stat_N <- quantile(true_test_stat_N, probs = c(0.025, 0.975))
+
+#For introduced plants
+mean_test_stat_I <- mean(true_test_stat_I)
+CI_test_stat_I <- quantile(true_test_stat_I, probs = c(0.025, 0.975))
+
+
+##Calculate the proportion of permutations runs greater than the test statistic
+#For native plants
+proportion_N <- native_threatened_all %>%
+  mutate(greater = map2_dbl(test_stats_N, true_test_stat_N, ~mean(.x > .y)))
+mean_proportion_N <- mean(proportion_N$greater)
+CI_N <- quantile(proportion_N$greater, probs = c(0.025, 0.975))
+
+#For introduced plants
+proportion_I <- native_threatened_all %>%
+  mutate(greater = map2_dbl(test_stats_I, true_test_stat_I, ~mean(.x > .y)))
+mean_proportion_I <- mean(proportion_I$greater)
+CI_I <- quantile(proportion_I$greater, probs = c(0.025, 0.975))
+```
+
+Permutation test for continuous traits (# seeds/fruit, seed width, fruit width)
+
+```{r}
+#Function for permutation test
+permutation_continuous <- function(plant_trait,plant_df,mammal_trait,mammal_stable,df){
+  
+  
+  
+  ###Calculate test statistic (mean with declining mammals - mean without declining mammals) of original data.
+  #Remove all plant species for which we don't have a measurement
+  systematic_review_clean <- filter(df,!is.na(.data[[plant_trait]])) 
+  
+  #Calculate the mean plant trait dispersed with declining mammals
+  with_declining <- systematic_review_clean %>% summarise(mean_value=mean(.data[[plant_trait]])) %>% pull(mean_value) 
+  
+  #Keep only the rows with non-threatened or small-bodied mammals
+  decline_filter <- systematic_review_clean %>% filter(.data[[mammal_trait]] == mammal_stable) 
+  
+  #Calculate the mean plant trait dispersed without declining mammals
+  without_declining <- decline_filter %>% summarise(mean_value=mean(.data[[plant_trait]])) %>% pull(mean_value) 
+  true_test_stat <- with_declining - without_declining
+  print(true_test_stat)
+
+  
+  
+  ###Create a df with all the possible links between mammals and plants on which we have data for a given plant trait to randomly sample from in the permutation test
+  #Find the number of mammals in the data set for that plant trait
+  mammals_unique <- length(unique(systematic_review_clean$mammal)) 
+  
+  #Create a df where all of the plants are repeated for each mammal species
+  plants_duplicate <- cbind(plant_df,rep(row.names(plant_df),each = mammals_unique)) 
+  #Separate the columns containing the mammal, threatened status, and body size
+  mammals <- systematic_review_clean[,c(1:3)] 
+  
+  #Remove duplicate rows so there is only one row per mammal species
+  mammals <- distinct(mammals) 
+  
+  #Create a df where all the mammals are repeated for each plant species
+  mammals_duplicate <- cbind(mammals,rep(row.names(mammals),each=length(plant_df$plant_species))) 
+  
+  #Put the df in alphabetical order
+  mammals_duplicate <- arrange(mammals_duplicate,mammal)
+  
+  #Combine mammal and plant lists into one df with all possible interactions between mammals and plants
+  all <- cbind(mammals_duplicate,plants_duplicate) 
+  
+  
+  ##Sample from the df of all possibilities the number of links each mammal has in the network. Repeat this for each permutation.
+  #Count the number of links per mammal species in the original data set
+  link_counts <- group_by(systematic_review_clean,mammal) %>% summarize(count = n()) 
+  #Turn link_counts into a list
+  mammal_links <- with(link_counts,split(count,factor(mammal,levels=unique(mammal))))
+  
+  
+  
+  ###Permute the data set 1,000 times and recalculate the test statistic
+  #Create an empty vector to store the test statistics for the 1,000 permuted data sets
+  permutation_test_stats <- numeric(1000)
+  set.seed(100)
+  for (i in 1:1000) {
+    
+    #Split df with all possibilities up by mammal species
+    mammal_groups <- split(all, all$mammal) 
+  
+    #For each mammal, remove links until the number of links is the same as in the original data set
+    for (mammal in names(mammal_groups)) {
+      
+      #Number of links in the original data set
+      links_current <- mammal_links[[mammal]] 
+      
+      #Randomly sample indices until read the number in the original data set for that mammal
+      if (nrow(mammal_groups[[mammal]]) > links_current) {
+        sample_mammal <- sample(nrow(mammal_groups[[mammal]]), links_current) 
+        mammal_groups[[mammal]] <- mammal_groups[[mammal]][sample_mammal, ]
+      }
+    }
+  
+    #Combine outputs for each mammal maintaining set order in df
+    final_permutation <- do.call(rbind, mammal_groups) 
+
+    
+    
+    ###Calculate the test statistic for each permuted data set:
+    #Calculate the mean plant trait dispersed with declining mammals
+    with_declining_permutation <- final_permutation %>% summarise(mean_value=mean(.data[[plant_trait]])) %>% pull(mean_value) 
+    
+    #Keep only the rows with non-threatened or small-bodied mammals
+    decline_filter <- final_permutation %>% filter(.data[[mammal_trait]] == mammal_stable) 
+    
+    #Calculate the mean plant trait dispersed without declining mammals
+    without_declining_permutation <- decline_filter %>% summarise(mean_value=mean(.data[[plant_trait]])) %>% pull(mean_value) 
+  
+    #Calculate the test statistic for each permutation
+    test_stats <- with_declining_permutation - without_declining_permutation
+    permutation_test_stats[i] <- test_stats
+  }
+
+  
+  
+  ###Run a two-tailed test 
+  #Proportion of results in the two tails
+  two_tailed <- sum(permutation_test_stats>abs(true_test_stat))+sum(permutation_test_stats<(-abs(true_test_stat))) 
+  p_value <- two_tailed/1000
+  print(p_value)
+}
+```
+
+Example of application of this function to testing the contribution of threatened mammals to the dispersal of plants with regard to the # of seeds/fruit.
+
+```{r}
+permutation_continuous("number_s_per_f",all_num_seeds,"threatened_status","NT",systematic_review_analysis_continuous)
+```
